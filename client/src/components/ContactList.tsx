@@ -22,11 +22,17 @@ export default function ContactList({ refreshKey }: { refreshKey: number }) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState("");
+
+  const API_URL =
+    import.meta.env.MODE === "development"
+      ? "http://localhost:3000"
+      : "https://contactmanager-8any.onrender.com";
 
   useEffect(() => {
     const fetchContacts = async () => {
       try {
-        const res = await axios.get<Contact[]>("http://localhost:3000/get"); //fetch all contacts from backend
+        const res = await axios.get<Contact[]>(`${API_URL}/get`); //fetch all contacts from backend
         setContacts(res.data);
       } catch {
         setError("Failed to fetch contacts");
@@ -36,6 +42,27 @@ export default function ContactList({ refreshKey }: { refreshKey: number }) {
     };
     fetchContacts();
   }, [refreshKey]);
+
+  //handle Deletion of contact
+  const handleDelete = async (id: string) => {
+    try {
+      await axios.delete(`${API_URL}/delete/${id}`);
+      setContacts((prev) => prev.filter((c) => c._id !== id));
+      setSuccess("Contact deleted successfully");
+    } catch {
+      setError("Failed to delete contact");
+    }
+  };
+
+  useEffect(() => {
+    if (!success) return;
+
+    const timer = setTimeout(() => {
+      setSuccess("");
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [success]);
 
   //some validations
 
@@ -63,73 +90,99 @@ export default function ContactList({ refreshKey }: { refreshKey: number }) {
   //Contacts in table format
   return (
     <div className="flex h-full flex-col ">
-      <div className="mb-5 flex items-center justify-between ">
-        <h2 className="text-2xl mt-12!  mb-4! tracking-tight font-bold bg-amber-200">
-          Contacts List:
-        </h2>
-        <span className="mr-4!">{contacts.length} contacts</span>
-      </div>
-
-      <div className="hidden md:block flex-1 overflow-auto">
-        <div className="space-y-3">
-          <Table className="border-separate border-spacing-y-3">
-            <TableHeader>
-              <TableRow className="bg-transparent">
-                <TableHead className="px-4 text-slate-500">Name</TableHead>
-                <TableHead className="text-slate-500">Email</TableHead>
-                <TableHead className="text-slate-500">Phone</TableHead>
-                <TableHead className="text-slate-500 w-[40%]">
-                  Message
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              {contacts.map((c) => (
-                <TableRow
-                  key={c._id}
-                  className=" bg-white shadow-sm rounded-xl  hover:shadow-md transition"
-                >
-                  <TableCell className="px-4 py-4 font-medium rounded-l-xl">
-                    {c.name}
-                  </TableCell>
-
-                  <TableCell className="text-slate-600">{c.email}</TableCell>
-
-                  <TableCell className="whitespace-nowrap">{c.phone}</TableCell>
-
-                  <TableCell className="max-w-[420px] whitespace-normal break-words text-slate-600 rounded-r-xl">
-                    {c.message || "—"}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+      <div className="p-4!">
+        <div className="mb-5 flex items-center justify-between ">
+          <h2 className="text-2xl mt-12!  mb-4! tracking-tight font-bold bg-amber-200">
+            Contacts List:
+            <span className="bg-green-200">
+              {" "}
+              <hr />
+            </span>
+          </h2>
         </div>
-      </div>
 
-      <div className="md:hidden  space-y-4">
-        {contacts.map((c) => (
-          <Card
-            key={c._id}
-            className="rounded-2xl m-4! border p-12 border-slate-200 shadow-sm"
-          >
-            <CardContent className="p-4 !mb-4 space-y-2 ">
-              <div className="flex items-center justify-between">
-                <p className="font-bold">{c.name}</p>
-                <span className="text-xs text-slate-400 ">Contact</span>
-              </div>
-              <p className="text-slate-600">email: {c.email}</p>
-              <p>Contact number:{c.phone}</p>
-              {c.message && (
-                <p className="pt-1 text-slate-500">
-                  <strong>Message : </strong>
-                  {c.message}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+        <div className="hidden md:block flex-1 overflow-auto">
+          <div className="space-y-3">
+            <Table className="border-separate border-spacing-y-3">
+              <TableHeader>
+                <TableRow className="bg-transparent">
+                  <TableHead className="px-4 text-slate-500">Name</TableHead>
+                  <TableHead className="text-slate-500">Email</TableHead>
+                  <TableHead className="text-slate-500">Phone</TableHead>
+                  <TableHead className="text-slate-500 w-[40%]">
+                    Message
+                  </TableHead>
+                  <TableHead className="text-slate-500">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {success && (
+                  <div className="mb-4 text-sm text-green-600 bg-green-50 p-2 rounded">
+                    {success}
+                  </div>
+                )}
+                {contacts.map((c) => (
+                  <TableRow
+                    key={c._id}
+                    className=" bg-gray-100 shadow-sm   rounded-lg  hover:shadow-md transition"
+                  >
+                    <TableCell className="p-3! font-medium rounded-l-xl">
+                      {c.name}
+                    </TableCell>
+
+                    <TableCell className="text-slate-600">{c.email}</TableCell>
+
+                    <TableCell className="whitespace-nowrap">
+                      {c.phone}
+                    </TableCell>
+
+                    <TableCell className="max-w-[420px] whitespace-normal break-words text-slate-600 rounded-r-xl">
+                      {c.message || "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <button
+                        onClick={() => handleDelete(c._id)}
+                        className="text-red-600 mr-2!  cursor-pointer hover:underline text-sm"
+                      >
+                        Delete contact
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        <div className="md:hidden  space-y-4">
+          {contacts.map((c) => (
+            <Card
+              key={c._id}
+              className="rounded-2xl m-4! border p-3! border-slate-200 shadow-sm"
+            >
+              <CardContent className="p-4 !mb-4 space-y-2 ">
+                <div className="flex items-center justify-between">
+                  <p className="font-bold py-3!">{c.name}</p>
+                </div>
+                <p className="text-slate-600">Email: {c.email}</p>
+                <p>Contact number:{c.phone}</p>
+                {c.message && (
+                  <p className="pt-1 text-slate-500">
+                    <strong>Message : </strong>
+                    {c.message}
+                  </p>
+                )}
+                <button
+                  onClick={() => handleDelete(c._id)}
+                  className="mt-3! text-sm  text-red-600"
+                >
+                  Delete Contact
+                </button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -28,7 +28,6 @@ app.post("/submit", validateEmail, async (req, res) => {
       message: "Name, email and phone are required",
     });
   }
-
   try {
     await Contact.create({
       name,
@@ -46,7 +45,18 @@ app.post("/submit", validateEmail, async (req, res) => {
         message: "Email or phone already exists",
       });
     }
+    res.status(500).json({ message: error.message });
+  }
+});
 
+app.delete("/delete/:id", async (req, res) => {
+  try {
+    const deletedContact = await Contact.findByIdAndDelete(req.params.id);
+    if (!deletedContact) {
+      return res.status(404).json({ message: "Contact not found" });
+    }
+    res.json({ message: "Contact deleted successfully" });
+  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });

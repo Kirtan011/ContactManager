@@ -20,19 +20,24 @@ export default function Form({ onSuccess }: { onSuccess: () => void }) {
     message: "",
   });
 
-  //handle form data
+  const API_URL =
+    import.meta.env.MODE === "development"
+      ? "http://localhost:3000"
+      : "https://contactmanager-8any.onrender.com";
+
+  // handle form data
   const handleForm = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((p) => ({ ...p, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  //handle form submission
+  // handle form submission
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:3000/submit", formData); //passing form data to the backend for validation and storing
+      await axios.post(`${API_URL}/submit`, formData); //passing form data to the backend for validation and storing
       setFormData({ name: "", email: "", phone: "", message: "" });
       onSuccess();
     } catch (err: any) {
@@ -47,12 +52,13 @@ export default function Form({ onSuccess }: { onSuccess: () => void }) {
   //form
   return (
     <div className="w-full mt-12!  p-5!">
-      <div className="rounded-2xl bg-white border border-slate-200 shadow-lg p-6">
+      <div className="rounded-2xl bg-white border border-slate-200 shadow-lg p-4!">
         <form onSubmit={handleSubmit} className="space-y-6">
           <FieldGroup>
             <FieldSet>
-              <FieldLegend className="bg-amber-200 font-bold text-4xl tracking-tight">
+              <FieldLegend className="bg-amber-200 rounded- mb-4! font-bold text-2xl! tracking-tight">
                 Contact Info:
+                <hr />
               </FieldLegend>
 
               <FieldDescription className="text-sm text-slate-500 mt-1">
@@ -68,7 +74,7 @@ export default function Form({ onSuccess }: { onSuccess: () => void }) {
                     value={formData.name}
                     onChange={handleForm}
                     required
-                    className="h-9 rounded-t-xl"
+                    className="h-9 rounded-lg"
                   />
                 </Field>
 
@@ -81,7 +87,7 @@ export default function Form({ onSuccess }: { onSuccess: () => void }) {
                     value={formData.email}
                     onChange={handleForm}
                     required
-                    className="h-9 rounded-t-xl"
+                    className="h-9 rounded-lg"
                   />
                 </Field>
 
@@ -94,7 +100,7 @@ export default function Form({ onSuccess }: { onSuccess: () => void }) {
                     placeholder="9351452853"
                     value={formData.phone}
                     onChange={handleForm}
-                    className="h-9 rounded-t-xl"
+                    className="h-9 rounded-lg"
                   />
                 </Field>
               </FieldGroup>
@@ -114,14 +120,14 @@ export default function Form({ onSuccess }: { onSuccess: () => void }) {
             </FieldSet>
 
             <Field orientation="horizontal" className="flex gap-3 pt-4">
-              <Button className="flex-1 h-11 rounded-lg bg-slate-900 hover:bg-slate-800 text-white">
+              <Button className="flex-1 h-11 rounded-lg bg-green-600 hover:bg-slate-900 text-white">
                 Submit
               </Button>
 
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1 h-11 rounded-lg"
+                className="flex-1 bg-red-600 hover:bg-slate-900 h-11 text-white rounded-lg"
                 onClick={() =>
                   setFormData({
                     name: "",
