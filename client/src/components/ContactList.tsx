@@ -92,12 +92,11 @@ export default function ContactList({ refreshKey }: { refreshKey: number }) {
     <div className="flex h-full flex-col ">
       <div className="p-4!">
         <div className="mb-5 flex items-center justify-between ">
-          <h2 className="text-2xl mt-12!  mb-4! tracking-tight font-bold bg-amber-200">
-            Contacts List:
-            <span className="bg-green-200">
-              {" "}
-              <hr />
-            </span>
+          <h2 className="flex text-2xl mt-12!  mb-4! tracking-tight font-bold bg-amber-200">
+            <h2> Contact List :</h2>
+          </h2>
+          <h2 className="flex  mt-12! text-sm  mb-4! tracking-tight font-bold bg-gray-200">
+            <p> Total contacts: {contacts.length}</p>
           </h2>
         </div>
 
